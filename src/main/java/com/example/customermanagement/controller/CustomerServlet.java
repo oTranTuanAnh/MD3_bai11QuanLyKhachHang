@@ -32,10 +32,26 @@ public class CustomerServlet extends HttpServlet {
                 updateCustomer(req, resp);
                 break;
             case "delete":
-//                deleteCustomer(request, response);
+                deleteCustomer(req, resp);
                 break;
             default:
                 break;
+        }
+    }
+
+    private void deleteCustomer(HttpServletRequest req, HttpServletResponse resp) {
+        int id = Integer.parseInt(req.getParameter("id"));
+        Customer customer = this.customerService.findById(id);
+        RequestDispatcher dispatcher;
+        if (customer == null) {
+            dispatcher = req.getRequestDispatcher("error-404.jsp");
+        } else {
+            this.customerService.remove(id);
+            try {
+                resp.sendRedirect("/customers");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -91,11 +107,34 @@ public class CustomerServlet extends HttpServlet {
             case "edit":
                 showPageEdit(req, resp);
                 break;
+            case "delete":
+                showPageDelete(req, resp);
+                break;
             default:
                 showAllCusomers(req, resp);
                 break;
         }
 
+    }
+
+    private void showPageDelete(HttpServletRequest req, HttpServletResponse resp) {
+        int id = Integer.parseInt(req.getParameter("id"));
+        Customer customer = this.customerService.findById(id);
+        RequestDispatcher dispatcher;
+
+        if (customer == null) {
+            dispatcher = req.getRequestDispatcher("error-404.jsp");
+        } else {
+            req.setAttribute("customer", customer);
+            dispatcher = req.getRequestDispatcher("customer/delete.jsp");
+        }
+        try {
+            dispatcher.forward(req, resp);
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void showPageEdit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
